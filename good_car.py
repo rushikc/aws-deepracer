@@ -1,5 +1,7 @@
 def reward_function(params):
     
+    print("Params - ", params)
+
     # Read input parameters
     track_width = params['track_width']
     distance_from_center = params['distance_from_center']
@@ -8,6 +10,7 @@ def reward_function(params):
     marker_1 = 0.1 * track_width
     marker_2 = 0.25 * track_width
     marker_3 = 0.5 * track_width
+    
     reward = 1e-3
     
     # Give higher reward if the car is closer to center line and vice versa
@@ -17,6 +20,8 @@ def reward_function(params):
         reward += 0.5
     elif distance_from_center <= marker_3:
         reward += 0.1
+    else:
+        return float(reward) # mostly out of track
     
     steering_angle = params['steering_angle']
     speed = params['speed']
@@ -26,14 +31,7 @@ def reward_function(params):
             reward += 2.0
         elif speed > 2.0:
             reward += 1.0
-    elif steering_angle < -15 or steering_angle > 15 :
-        if speed < 1.8:
-            reward += 1.0
-        elif speed < 2.2:
-            reward += 0.5
     
-    #steps = params['steps']
-    #progress = params['progress']
-    #step_rewards = ( progress / steps) * 10
-    #reward += step_rewards
+    
+    
     return float(reward)
