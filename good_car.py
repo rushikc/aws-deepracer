@@ -14,7 +14,7 @@ def reward_function(params):
 
     # Calculate 3 markers that are at varying distances away from the center line
     track_width = track_width + (car_axile_length*0.5)
-    marker_3 = 0.5 * track_width
+    marker_1 = 0.5 * track_width
     
     # Give higher reward if the car is within the track
     if distance_from_center <= marker_1:
