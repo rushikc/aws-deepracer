@@ -12,7 +12,7 @@ def reward_function(params):
     lowest_reward = 1e-3
     highest_reward = 2.0
 
-    # Calculate 3 markers that are at varying distances away from the center line
+    # reward for being on track
     track_width = track_width + (car_axle_length*0.5)
     marker_1 = 0.5 * track_width
     
@@ -28,5 +28,7 @@ def reward_function(params):
     # rewarding based on speed
     reward += (speed*highest_reward) * 0.25
     
+    if steering_angle < -15 or steering_angle > 15 :
+        reward *= 0.7
     
     return float(reward)
