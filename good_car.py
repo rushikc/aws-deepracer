@@ -28,6 +28,7 @@ def reward_function(params):
     # rewarding based on speed
     reward += (speed*highest_reward) * 0.25
     
+    # discourage angles more than 15 degree
     if steering_angle < -15 or steering_angle > 15 :
         reward *= 0.7
     
