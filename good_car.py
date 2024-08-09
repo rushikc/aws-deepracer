@@ -25,21 +25,8 @@ def reward_function(params):
     steering_angle = params['steering_angle']
     speed = params['speed']
     
-    if -5 < steering_angle < 5 :
-        if speed == 4:
-            reward += highest_reward
-        elif speed > 3.8:
-            reward += (highest_reward - 0.1)
-        elif speed > 3.6:
-            reward += (highest_reward - 0.2)
-        elif speed > 3.4:
-            reward += (highest_reward - 0.3)
-        elif speed > 3.2:
-            reward += (highest_reward - 0.4)
-        elif speed > 3:
-            reward += (highest_reward - 0.5)
-        elif speed > 2.8:
-            reward += (highest_reward - 0.6)
+    # rewarding based on speed
+    reward += (speed*highest_reward) * 0.25
     
     
     return float(reward)
