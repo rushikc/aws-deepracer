@@ -12,7 +12,8 @@ def reward_function(params):
     
     reward = 1e-3
     lowest_reward = 1e-3
-    highest_reward = 2.0
+    speed_reward = 3
+    track_reward = 2.0
 
     # reward for being on track
     track_width = track_width + (car_axle_length*0.5)
@@ -20,7 +21,7 @@ def reward_function(params):
     
     # Give higher reward if the car is within the track
     if distance_from_center <= marker_1:
-        reward += highest_reward
+        reward += track_reward
     else:
         return float(reward) # car is out of track
     
@@ -28,7 +29,7 @@ def reward_function(params):
     speed = params['speed']
     
     # rewarding based on speed
-    reward += (speed*highest_reward) * 0.25
+    reward += (speed*speed_reward) * 0.25
     
     # discourage angles more than 15 degree
     if steering_angle < -15 or steering_angle > 15 :
@@ -40,7 +41,7 @@ def reward_function(params):
 
 
 def check_heading_angles(params):
-    heading = params['heading']
+    heading_direction = params['heading']
     waypoints = params['waypoints']
     vehicle_x = params['x']
     vehicle_y = params['y']
@@ -53,16 +54,62 @@ def check_heading_angles(params):
     # Convert to degree
     route_direction = math.degrees(route_direction)
     # Calculate the difference between the track direction and the heading direction of the car
-    direction_diff = route_direction - heading
+    direction_diff = route_direction - heading_direction
     #Check that the direction_diff is in valid range
     #Then compute the heading reward
     
+    print("route_direction ", route_direction)
+    print("heading_direction ", heading_direction)
+    print("direction_diff ", direction_diff)
+
     if abs(direction_diff) <= 20:
         reward = math.cos( abs(direction_diff ) * ( math.pi / 180 ) ) ** 2
     else:
         reward = math.cos( abs(direction_diff ) * ( math.pi / 180 ) ) ** 10
     
     return reward * 0.5
+
+def check_heading_angles(params):
+    heading_direction = params['heading']
+    waypoints = params['waypoints']
+    vehicle_x = params['x']
+    vehicle_y = params['y']
+    next_way_point_index = params['closest_waypoints'][1]
+    next_route_point_x = waypoints[next_way_point_index][0]
+    next_route_point_y = waypoints[next_way_point_index][1]
+
+    route_direction = get_angle_diff(vehicle_x, vehicle_y, next_route_point_x, next_route_point_y)
+    # Calculate the difference between the track direction and the heading direction of the car
+    direction_diff = route_direction - heading_direction
+
+    #Check that the direction_diff between where Car is heading wrt path is in valid range
+    #Then compute the heading reward
+    if abs(direction_diff) <= 20:
+        reward = math.cos( abs(direction_diff ) * ( math.pi / 180 ) ) ** 2
+    else:
+        reward = math.cos( abs(direction_diff ) * ( math.pi / 180 ) ) ** 10
+    
+    return reward * 0.5
+
+def check_straight_line(params, total_waypoints):
+    waypoints = params['waypoints']
+    waypoints_index = params['closest_waypoints'][0]
+
+    # waypoint is stored as tuple of (x,y)
+    w1 = waypoints[waypoints_index] 
+    w2 = waypoints[waypoints_index + 1]
+
+
+    angle_diff = get_angle_diff(w1(0), w1(1), w2(0), w2(1))
+    
+    return  angle_diff
     
 
+def get_angle_diff(x1,y1,x2,y2):
+    # Calculate the direction in radius, arctan2(dy, dx), 
+    # the result is (-pi, pi) in radians between target and current vehicle position
+    route_direction = math.atan2(y2 - y1, x2 - x1) 
+    # Convert to degree
+    route_direction = math.degrees(route_direction)
+    return route_direction
     
