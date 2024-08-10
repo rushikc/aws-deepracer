@@ -21,7 +21,7 @@ def reward_function(params):
     if distance_from_center <= marker_1:
         reward += track_reward
     else:
-        return float(reward) # car is out of track
+        return float(lowest_reward) # car is out of track
     
     steering_angle = params['steering_angle']
     speed = params['speed']
