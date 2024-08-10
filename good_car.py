@@ -10,7 +10,8 @@ def reward_function(params):
     
     reward = 1e-3
     lowest_reward = 1e-3
-    highest_reward = 2.0
+    speed_reward = 2.5
+    track_reward = 2.0
 
     # reward for being on track
     track_width = track_width + (car_axle_length*0.5)
@@ -18,7 +19,7 @@ def reward_function(params):
     
     # Give higher reward if the car is within the track
     if distance_from_center <= marker_1:
-        reward += highest_reward
+        reward += track_reward
     else:
         return float(reward) # car is out of track
     
@@ -26,7 +27,7 @@ def reward_function(params):
     speed = params['speed']
     
     # rewarding based on speed
-    reward += (speed*highest_reward) * 0.25
+    reward += (speed*speed_reward) * 0.25
     
     # discourage angles more than 15 degree
     if steering_angle < -15 or steering_angle > 15 :
