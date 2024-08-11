@@ -35,30 +35,21 @@ def reward_function(params):
     
     
     # reward model if it is on straight line with higher speed
-    route_angle = check_waypoints_angle(params, 3) # checks next 4 waypoints angle
+    route_angle = check_waypoints_angle(params, 4) # checks next 4 waypoints angle
 
     # if path is straight
     if route_angle < 1.5 and speed > 3.5:
-        # reduce reward if model is left side of track
-        if is_left_of_center:
-            reward *= 0.5
-        else:
-            if distance_from_center <= marker_1 and distance_from_center > (marker_1*0.2):
-                # add reward for going fast in straight line
-                reward = reward + (speed * 0.5)
-                reward *= (1/(abs(steering_angle) + 0.65))  # 0 degree angle being highest, i.e 1.53 points multiplier
-            else:
-                # making car take turn to right, 
-                # but limiting it to 5 degree steering angle
-                reward *= (((abs(steering_angle) + 1) % 6)*0.5)
-    
-    # there's a turning ahead
+        # add reward for going fast in straight line
+        reward = reward + (speed * 0.5)
+        reward *= (1/(abs(steering_angle) + 0.65))  # 0 degree angle being highest, i.e 1.53 points multiplier
+    # if there's a turning ahead
     # reduce reward if it goes faster than 3 ms
-    else:
+    elif route_angle >= 1.5:
         if speed > 3:        
             reward *= 0.5
         else:
             # reward if car turns during curves
+            reward = reward + (speed * 0.5)
             reward *= ((abs(steering_angle) + 1.1) % 10)
     
     # discourage angles more than 15 degree
@@ -122,9 +113,9 @@ def check_heading_angles(params):
     #Check that the direction_diff is in valid range
     #Then compute the heading reward
 
-    print("route_direction ", route_direction)
-    print("heading_direction ", heading_direction)
-    print("direction_diff ", direction_diff)
+    # print("route_direction ", route_direction)
+    # print("heading_direction ", heading_direction)
+    # print("direction_diff ", direction_diff)
 
     if abs(direction_diff) <= 20:
         reward = math.cos( abs(direction_diff ) * ( math.pi / 180 ) ) ** 2

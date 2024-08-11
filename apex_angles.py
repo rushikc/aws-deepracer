@@ -35,7 +35,7 @@ def reward_function(params):
     
     
     # reward model if it is on straight line with higher speed
-    route_angle = check_waypoints_angle(params, 3) # checks next 4 waypoints angle
+    route_angle = check_waypoints_angle(params, 4) # checks next 4 waypoints angle
 
     # if path is straight
     if route_angle < 1.5 and speed > 3.5:
@@ -43,7 +43,7 @@ def reward_function(params):
         if is_left_of_center:
             reward *= 0.5
         else:
-            if distance_from_center <= marker_1 and distance_from_center > (marker_1*0.2):
+            if distance_from_center <= marker_1 and distance_from_center > (marker_1*0.3):
                 # add reward for going fast in straight line
                 reward = reward + (speed * 0.5)
                 reward *= (1/(abs(steering_angle) + 0.65))  # 0 degree angle being highest, i.e 1.53 points multiplier
@@ -52,9 +52,9 @@ def reward_function(params):
                 # but limiting it to 5 degree steering angle
                 reward *= (((abs(steering_angle) + 1) % 6)*0.5)
     
-    # there's a turning ahead
+    # if there's a turning ahead
     # reduce reward if it goes faster than 3 ms
-    else:
+    elif route_angle >= 1.5:
         if speed > 3:        
             reward *= 0.5
         else:
