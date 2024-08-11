@@ -37,6 +37,7 @@ def reward_function(params):
     # reward model if it is on straight line with higher speed
     route_angle = check_waypoints_angle(params, 4) # checks next 4 waypoints angle
 
+
     # if path is straight
     if route_angle < 1.5 and speed > 3.5:
         # reduce reward if model is left side of track
