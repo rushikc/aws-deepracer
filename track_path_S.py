@@ -23,6 +23,7 @@ def reward_function(params):
         PARAMS.prev_speed = None
         PARAMS.prev_steering_angle = None
         PARAMS.prev_steps = None
+        PARAMS.prev_angle = None
 
     car_axle_length = 0.165
     
@@ -50,8 +51,12 @@ def reward_function(params):
     
     
     # reward model if it is on straight line with higher speed
-    route_angle = check_waypoints_angle(params, 4) # checks next 4 waypoints angle
+    route_angle = check_waypoints_angle(params, 2) # checks next 2 waypoints angle
 
+    if PARAMS.prev_angle != None:
+        route_angle_diff = route_angle - PARAMS.prev_angle
+    else:
+        route_angle_diff = 0
 
     # first track segment before start of acute turns or curves
     track1_start = -1
@@ -66,56 +71,92 @@ def reward_function(params):
 
         # trying to go right side
         if steering_angle < 0:
-            reward *= 0.1
+            reward = lowest_reward
         else:
             # if path is straight
-            if route_angle < 1.5 :
+            if speed < 1:
+                reward = lowest_reward
+            elif route_angle < 1.5 :
                 # add reward for going fast in straight line
-                reward = reward + (speed * 0.9)
+                reward *= (speed * 0.5)
 
                 if PARAMS.prev_speed != None:
                     speed_diff = speed - PARAMS.prev_speed
                     if speed_diff <= 0:
-                        reward *= 0.1
+                        reward = lowest_reward
                     else:
-                        reward *= 1.7
+                        reward *= ((speed_diff+1)*1.5)
 
             # if there's a turning ahead
             # add reward to make model stick to left steering angle ( +ve )
             elif route_angle >= 1.5:
-                # reward if car turns left during curves
-                reward = reward + (speed * 0.9)
 
+                reward *= (speed * 0.5)
+                if speed > 3.5:        
+                    reward = lowest_reward
+                elif route_angle_diff > 1.5:
+                    if PARAMS.prev_speed != None:
+                        speed_diff = speed - PARAMS.prev_speed
+                        if speed_diff < 0:
+                            reward *= ((abs(speed_diff)+1)*1.5)
+                        else:
+                            reward = lowest_reward
+
+                if route_angle_diff < -1.5:
+                    if PARAMS.prev_speed != None:
+                        speed_diff = speed - PARAMS.prev_speed
+                        if speed_diff <= 0:
+                            reward = lowest_reward
+                        else:
+                            reward *= ((speed_diff+1)*1.5)            
     else:
         if speed > 3:        
-            reward *= 0.1
+            reward = lowest_reward
+        elif speed < 1:
+            reward = lowest_reward
         else:
             # if path is straight
             if route_angle < 1.5:
 
-                reward = reward + (speed * 0.9)
+                reward *= (speed * 0.5)
+
                 if PARAMS.prev_speed != None:
                         speed_diff = speed - PARAMS.prev_speed
                         if speed_diff <= 0:
-                            reward *= 0.1
+                            reward = lowest_reward
                         else:
                             reward *= 1.7
+
             # if there's a turning ahead
             # reduce reward if it goes faster than 3 ms
             elif route_angle >= 1.5:
                 # reward if car turns during curves
-                reward = reward + (speed * 0.5)
-                reward *= ((abs(steering_angle) + 1.1) % 10)
+                reward *= (speed * 0.5)
+                
+                if route_angle_diff > 1.5:
+                    if PARAMS.prev_speed != None:
+                        speed_diff = speed - PARAMS.prev_speed
+                        if speed_diff < 0:
+                            reward *= ((abs(speed_diff)+1)*1.5)
+                        else:
+                            reward = lowest_reward
 
+                if route_angle_diff < -1.5:
+                    if PARAMS.prev_speed != None:
+                        speed_diff = speed - PARAMS.prev_speed
+                        if speed_diff <= 0:
+                            reward = lowest_reward
+                        else:
+                            reward *= ((speed_diff+1)*1.5)
     
-    # discourage angles more than 15 degree
-    if steering_angle < -15 or steering_angle > 15 :
-        reward *= 0.3
-
+    # discourage angles more than 10 degree
+    if steering_angle < -12 or steering_angle > 12 :
+        reward = lowest_reward    
+    
     # update the class variables
     PARAMS.prev_speed = speed
     PARAMS.prev_steering_angle = steering_angle
-    PARAMS.prev_steps = steps
+    PARAMS.prev_angle = route_angle
 
 
     return float(reward)
