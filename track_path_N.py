@@ -91,8 +91,11 @@ def reward_function(params):
             # add reward to make model stick to left steering angle ( +ve )
             elif route_angle_3 >= 1.5:
                 # reward if car turns left during curves
-                reward = reward + (speed * 0.8)
-                reward *= ((abs(steering_angle) + 1.1) % 10)
+                reward = reward + (speed * 0.9)
+                if PARAMS.prev_speed != None:
+                    speed_diff = speed - PARAMS.prev_speed
+                    if speed_diff > 0:
+                        reward *= ((speed_diff+1)*1.5)
 
     else:
         # if path is straight
