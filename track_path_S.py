@@ -5,6 +5,7 @@ class PARAMS:
     prev_speed = None
     prev_steering_angle = None
     prev_steps = None
+    prev_angle = None
 
 
 def reward_function(params):
@@ -157,6 +158,7 @@ def reward_function(params):
     PARAMS.prev_speed = speed
     PARAMS.prev_steering_angle = steering_angle
     PARAMS.prev_angle = route_angle
+    PARAMS.prev_steps = steps
 
 
     return float(reward)

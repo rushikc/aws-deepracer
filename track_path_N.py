@@ -1,5 +1,11 @@
 import math
 
+class PARAMS:
+    prev_speed = None
+    prev_steering_angle = None
+    prev_steps = None
+    prev_angle = None
+
 def reward_function(params):
     
     print("Params - ", params)
@@ -8,7 +14,16 @@ def reward_function(params):
     track_width = params['track_width']
     distance_from_center = params['distance_from_center']
     current_waypoint = params['closest_waypoints'][0] - 1
+    steps = params['steps']
 
+    # Reinitialize previous parameters if it is a new episode
+    if PARAMS.prev_speed is None or steps < PARAMS.prev_steps:
+        PARAMS.prev_speed = None
+        PARAMS.prev_steering_angle = None
+        PARAMS.prev_steps = None
+        PARAMS.prev_angle = None
+
+    
     car_axle_length = 0.165
     
     reward = 1e-3
@@ -37,6 +52,9 @@ def reward_function(params):
     # reward model if it is on straight line with higher speed
     route_angle = check_waypoints_angle(params, 4) # checks next 4 waypoints angle
 
+    # for straight line checks only 3 waypoints
+    route_angle_3 = check_waypoints_angle(params, 3) # checks next 4 waypoints angle
+
 
     # first track segment before start of acute turns or curves
     track1_start = -1
@@ -54,7 +72,7 @@ def reward_function(params):
             reward *= 0.5
         else:
             # if path is straight
-            if route_angle < 1.5 :
+            if route_angle_3 < 1.5 :
                 # add reward for going fast in straight line
                 if speed > 3.7:
                     reward = reward + (speed * 0.9)
@@ -63,13 +81,15 @@ def reward_function(params):
                 else:
                     reward = reward + (speed * 0.7)
 
-                # 0 degree angle being highest, i.e 1.53 points multiplier
-                if steering_angle < 5 :
-                    reward *= 1.5
-
+                if PARAMS.prev_speed != None:
+                    speed_diff = speed - PARAMS.prev_speed
+                    if speed_diff <= 0:
+                        reward *= 0.5
+                    else:
+                        reward *= ((speed_diff+1)*1.5)
             # if there's a turning ahead
             # add reward to make model stick to left steering angle ( +ve )
-            elif route_angle >= 1.5:
+            elif route_angle_3 >= 1.5:
                 # reward if car turns left during curves
                 reward = reward + (speed * 0.8)
                 reward *= ((abs(steering_angle) + 1.1) % 10)
@@ -102,6 +122,11 @@ def reward_function(params):
     if steering_angle < -15 or steering_angle > 15 :
         reward *= 0.7
 
+    # update the class variables
+    PARAMS.prev_speed = speed
+    PARAMS.prev_steering_angle = steering_angle
+    PARAMS.prev_angle = route_angle
+    PARAMS.prev_steps = steps
 
     return float(reward)
 
